@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pilot.name + ' - Profile'}">Pilot Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            color: #333;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .profile-sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-right: 1px solid #eee;
+        }
+
+        .pilot-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #e94560;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .profile-main {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .pilot-name {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+
+        .pilot-title {
+            font-size: 14px;
+            color: #e94560;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .info-item span {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .garage-section {
+            background: #f0f4f8;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #e94560;
+        }
+
+        .garage-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+
+        .garage-credits {
+            font-size: 24px;
+            font-weight: 800;
+            color: #27ae60;
+        }
+
+        .btn-back {
+            background: #e94560;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-back:hover {
+            background: #0f3460;
+        }
+
+        @media (max-width: 768px) {
+            .profile-card {
+                flex-direction: column;
+            }
+            .profile-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 style="color: #fff; font-size: 24px;">🏁 Pilot Profile</h1>
+            <a href="/pilots" class="btn-back">← Back to Roster</a>
+        </header>
+
+        <div class="profile-card">
+            <div class="profile-sidebar">
+                <img th:src="${pilot.image != null && !pilot.image.isEmpty() ? pilot.image : 'https://www.w3schools.com/howto/img_avatar.png'}" 
+                     class="pilot-img" alt="Pilot Image">
+                <div class="pilot-name" th:text="${pilot.name}">Cesar Palacios</div>
+                <div class="pilot-title" th:text="${pilot.licence != null ? pilot.licence : 'Standard License'}">Pro Driver</div>
+            </div>
+
+            <div class="profile-main">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Nationality</label>
+                        <span th:text="${pilot.country != null ? pilot.country : 'Unknown'}">Colombia</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Experience</label>
+                        <span th:text="${pilot.experience != null ? pilot.experience : 'Newbie'}">5 Years</span>
+                    </div>
+                    <div class="info-item">
+                        <label>License Type</label>
+                        <span th:text="${pilot.licence != null ? pilot.licence : 'Standard'}">Class A</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Status</label>
+                        <span style="color: #27ae60;">● Active</span>
+                    </div>
+                </div>
+
+                <div class="garage-section" th:if="${pilot.garage != null}">
+                    <label style="display: block; font-size: 12px; color: #888; text-transform: uppercase; font-weight: 600; margin-bottom: 10px;">Current Team / Garage</label>
+                    <div class="garage-name" th:text="${pilot.garage.name}">Pit Stop Monaco</div>
+                    <div class="info-item">
+                        <label>Available Team Credits</label>
+                        <div class="garage-credits" th:text="${pilot.garage.credits != null ? '$' + #numbers.formatDecimal(pilot.garage.credits, 0, 'COMMA', 0, 'POINT') : '$0'}">$1,500,000</div>
+                    </div>
+                    <a th:href="@{/garages/{id}(id=${pilot.garage.id})}" style="display: inline-block; margin-top: 15px; font-size: 14px; color: #e94560; font-weight: 600; text-decoration: none;">Enter Team Garage →</a>
+                </div>
+
+                <div class="garage-section" th:if="${pilot.garage == null}" style="border-left-color: #ccc;">
+                    <p style="color: #888; font-style: italic;">No garage assigned to this pilot.</p>
+                    <a th:href="@{/pilots/edit/{id}(id=${pilot.id})}" style="display: inline-block; margin-top: 10px; font-size: 14px; color: #3498db; font-weight: 600; text-decoration: none;">Assign a Garage →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${garage.name + ' - Garage'}">Current Garage</title>
+    <style>
+        /* ... (Mantenemos tus estilos base) ... */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { color: #fff; }
+        .nav-menu { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-menu a { padding: 10px 20px; background: #e94560; color: white; text-decoration: none; border-radius: 5px; transition: 0.3s; }
+        .nav-menu a:hover { background: #0f3460; }
+
+        .content { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 10px; color: #333; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+        .garage-info-bar { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; display: flex; justify-content: space-around; border-left: 5px solid #FF8700; }
+        .info-item { text-align: center; }
+        .info-label { font-size: 12px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .info-value { font-size: 20px; font-weight: 700; color: #333; }
+        .credits-value { color: #27ae60; }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
+        .btn-add-car { background: #27ae60; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: 0.3s; border: none; cursor: pointer; }
+
+        .cars-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .car-card { background: white; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; }
+        .car-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
+        .car-details { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .car-name { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+
+        /* ESTILOS RACE MODE */
+        .race-controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ddd;
+        }
+        .race-input-group {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .input-pos {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .fee-tag {
+            background: #eee;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            white-space: nowrap;
+        }
+        .btn-race {
+            background: #FF8700;
+            color: #000;
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .btn-race:hover { background: #e67a00; }
+        .race-result {
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            display: none;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="header-top">
+            <h1 th:text="${garage.name}">Garage Name</h1>
+            <a href="/garages" style="color: white; text-decoration: none; font-weight: 600;">← Back to Garages</a>
+        </div>
+        <nav class="nav-menu">
+            <a href="/">Home</a>
+            <a href="/cars">Cars</a>
+            <a href="/garages">Garages</a>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div class="garage-info-bar">
+            <div class="info-item">
+                <p class="info-label">Available Credits</p>
+                <p class="info-value credits-value" id="garageBalance"
+                   th:data-balance="${garage.credits}"
+                   th:text="${garage.credits != null ? '$' + #numbers.formatDecimal(garage.credits, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</p>
+            </div>
+            <div class="info-item">
+                <p class="info-label">Fleet Size</p>
+                <p class="info-value" th:text="${garage.cars != null ? garage.cars.size() : 0}">0</p>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Vehicle Collection</h2>
+            <a th:href="@{/garage-cars/assign(garageId=${garage.id})}" class="btn-add-car" style="background: #3498db;">+ Assign Car</a>
+        </div>
+
+        <div th:unless="${garage.cars == null || garage.cars.isEmpty()}" class="cars-grid">
+            <div th:each="car : ${garage.cars}" class="car-card">
+                <img th:src="${car.image != null && !car.image.isEmpty() ? car.image : 'https://via.placeholder.com/300x160?text=No+Image'}"
+                     class="car-img" th:alt="${car.name}">
+                <div class="car-details">
+                    <div class="car-name" th:text="${car.name}">Car Name</div>
+                    <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                        Value: <span class="car-market-price" th:data-price="${car.price}"
+                                     th:text="${car.price != null ? '$' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</span>
+                    </div>
+
+                    <div class="race-controls">
+                        <div class="race-input-group">
+                            <input type="number" class="input-pos" placeholder="Pos (1-20)" min="1" max="20">
+                            <div class="fee-tag">FEE: <span class="fee-text">$-</span></div>
+                        </div>
+                        <button class="btn-race" onclick="startRace(this)">🏁 Race</button>
+                        <div class="race-result"></div>
+                    </div>
+
+                    <form th:action="@{/garage-cars/sell}" method="post" style="width: 100%;">
+                        <input type="hidden" name="garageId" th:value="${garage.id}">
+                        <input type="hidden" name="carId" th:value="${car.id}">
+                        <button type="submit"
+                                class="btn-add-car"
+                                style="background: #e74c3c; width: 100%; border: none; cursor: pointer;"
+                                th:onclick="|return confirm('Sell this vehicle for $' + #numbers.formatDecimal(car.price * 0.7, 0, 'COMMA', 0, 'POINT') + ' (70% of value)?')|">
+                            Sell Vehicle
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Función auxiliar para obtener el porcentaje de entrada (1% a 5%)
+    function getRandomEntryPercent() {
+        return (Math.random() * (0.05 - 0.01) + 0.01);
+    }
+
+    // Inicializar costos dinámicos al cargar
+    document.querySelectorAll('.car-card').forEach(card => {
+        const price = parseFloat(card.querySelector('.car-market-price').getAttribute('data-price')) || 0;
+
+        // Generamos un porcentaje aleatorio para este coche específico
+        const entryPercent = getRandomEntryPercent();
+        const fee = price * entryPercent;
+
+        // GUARDADO CLAVE: Guardamos el porcentaje en el dataset de la card
+        card.dataset.currentFeePercent = entryPercent;
+
+        // Formateamos el texto del FEE para que el usuario sepa cuánto le cobran
+        card.querySelector('.fee-text').innerText = `$${Math.floor(fee).toLocaleString()} (${(entryPercent * 100).toFixed(1)}%)`;
+    });
+
+    async function startRace(button) {
+        const card = button.closest('.car-card');
+        const resultDiv = card.querySelector('.race-result');
+        const posInput = card.querySelector('.input-pos');
+
+        const carPrice = parseFloat(card.querySelector('.car-market-price').getAttribute('data-price')) || 0;
+
+        // RECUPERACIÓN CLAVE: Leemos el porcentaje que guardamos antes
+        const entryPercent = parseFloat(card.dataset.currentFeePercent) || 0.01;
+        const entryFee = carPrice * entryPercent;
+
+        const balanceElement = document.getElementById('garageBalance');
+        const currentBalance = parseFloat(balanceElement.getAttribute('data-balance')) || 0;
+
+        // 1. Validación de saldo con el FEE dinámico
+        if (currentBalance < entryFee) {
+            alert(`¡Fondos insuficientes! Necesitas $${Math.floor(entryFee).toLocaleString()} para esta carrera.`);
+            return;
+        }
+
+        // 2. Lógica de Pool Buffeada (mínimo 15% del valor del coche)
+        const poolPercentage = (Math.random() * (0.65 - 0.25) + 0.25);
+        const totalPool = carPrice * poolPercentage;
+
+        // 3. Posición (Si está vacío, generamos una aleatoria entre 1 y 12)
+        let placement = parseInt(posInput.value);
+        if (isNaN(placement) || placement < 1) placement = Math.floor(Math.random() * 12) + 1;
+
+        // 4. Distribución de premios
+        const distribution = {
+            1: 0.25, 2: 0.18, 3: 0.15, 4: 0.12, 5: 0.10,
+            6: 0.08, 7: 0.06, 8: 0.04, 9: 0.02, 10: 0.01
+        };
+
+        const winPercentage = distribution[placement] || 0;
+        const netProfit = (totalPool * winPercentage) - entryFee;
+
+        // Animación visual
+        button.disabled = true;
+        button.innerText = "🏎️ Racing...";
+        resultDiv.style.display = 'none';
+
+        setTimeout(async () => {
+            try {
+                const response = await fetch('/garage-cars/race-result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        garageId: [[${garage.id}]],
+                        amount: netProfit
+                    })
+                });
+
+                if (!response.ok) throw new Error("Error en el servidor");
+
+                const data = await response.json();
+
+                // Actualizar Saldo Real-Time
+                balanceElement.setAttribute('data-balance', data.newBalance);
+                balanceElement.innerText = `$${Math.floor(data.newBalance).toLocaleString('en-US')}`;
+
+                button.disabled = false;
+                button.innerText = "🏁 Race";
+                resultDiv.style.display = 'block';
+
+                if (netProfit > 0) {
+                    resultDiv.style.background = '#d4edda';
+                    resultDiv.style.color = '#155724';
+                    resultDiv.innerHTML = `Pos: ${placement}º | Win: +$${Math.floor(netProfit).toLocaleString()}`;
+                } else {
+                    resultDiv.style.background = '#f8d7da';
+                    resultDiv.style.color = '#721c24';
+                    resultDiv.innerHTML = `Pos: ${placement}º | Loss: -$${Math.abs(Math.floor(netProfit)).toLocaleString()}`;
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                button.disabled = false;
+                button.innerText = "🏁 Race";
+                alert("Hubo un problema con la conexión al servidor de carreras.");
+            }
+        }, 1200);
+    }
+</script>
+</body>
+</html>

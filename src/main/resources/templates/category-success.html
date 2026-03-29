@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Created Successfully</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .success-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 60px 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #27ae60;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s, transform 0.2s;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+        }
+        
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .btn-secondary:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Category Created!</h1>
+        <p>Your new racing category has been successfully created and is now available in the system.</p>
+        
+        <div class="button-group">
+            <a href="/categories/new" class="btn btn-primary">Create Another</a>
+            <a href="/" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

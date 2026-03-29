@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Racing Category</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+        }
+        
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background: #7f8c8d;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+        
+        .info-text {
+            background: #ecf0f1;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .form-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-header::before {
+            content: "🏁";
+            font-size: 32px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <h1>Create Racing Category</h1>
+            </div>
+            
+            <div class="info-text">
+                Define a new racing category with specifications for your racing fleet.
+            </div>
+            
+            <form action="/categories" method="post">
+                <div class="form-group">
+                    <label for="name" class="required">Category Name</label>
+                    <input type="text" id="name" name="name" placeholder="e.g. Formula 1, GT Racing, Truck Racing" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Image</label>
+                    <textarea id="image" name="image" placeholder="Paste the image URL..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">Create Category</button>
+                    <a href="/categories" class="btn btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

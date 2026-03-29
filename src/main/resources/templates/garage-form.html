@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${garage.id != null} ? 'Edit Garage' : 'Establish New Garage'">Garage Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #229954;
+        }
+
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #7f8c8d;
+        }
+
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1 th:text="${garage.id != null} ? 'Edit Garage' : 'Establish New Garage'">Garage Form</h1>
+            
+            <form th:action="@{/garages}" th:object="${garage}" method="post">
+                <input type="hidden" th:field="*{id}">
+                
+                <div class="form-group">
+                    <label for="name" class="required">Garage Name</label>
+                    <input type="text" id="name" th:field="*{name}" placeholder="e.g. Scuderia Ferrari" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="credits" class="required">Initial Credits</label>
+                    <input type="number" id="credits" th:field="*{credits}" min="0" placeholder="e.g. 1000000" required>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit" th:text="${garage.id != null} ? 'Update Garage' : 'Establish Garage'">Submit</button>
+                    <a href="/garages" class="btn btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Racing Categories</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #FF9B3B 0%, #FFB670 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-menu a {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .nav-menu a:hover {
+            background: #764ba2;
+        }
+        
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        h2 {
+            color: #333;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-add:hover {
+            background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .category-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .category-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .category-info {
+            margin: 12px 0;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .category-info strong {
+            color: #333;
+            display: inline-block;
+            min-width: 120px;
+        }
+        
+        .category-description {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 12px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #666;
+            min-height: 40px;
+        }
+        
+        .specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .spec-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .spec-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .spec-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state h2 {
+            margin-bottom: 10px;
+            color: #bbb;
+        }
+        
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏁 Racing Mode</h1>
+            <nav class="nav-menu">
+                <a href="/">Home</a>
+                <a href="/garages">Garages</a>
+                <a href="/cars">Cars</a>
+                <a href="/categories">Categories</a>
+                <a href="/pilots">Pilots</a>
+            </nav>
+        </header>
+        
+        <div class="content">
+            <div class="content-header">
+                <h2>Racing Categories</h2>
+                <a href="/categories/new" class="btn-add">+ Create Category</a>
+            </div>
+            
+            <div th:if="${categories.isEmpty()}" class="empty-state">
+                <h2>No Categories Found</h2>
+                <p>Start by creating your first racing category.</p>
+                <a href="/categories/new" class="btn-add">Create First Category</a>
+            </div>
+            
+            <div th:unless="${categories.isEmpty()}" class="categories-grid">
+                <div th:each="category : ${categories}" class="category-card">
+
+                    <div class="category-info" th:if="${category.id}">
+                        <strong>ID:</strong>
+                        <span th:text="${category.id}">1</span>
+                    </div>
+
+                    <h3 th:text="${category.name}">Category Name</h3>
+
+                    <div class="category-image-container" style="text-align: center; margin-bottom: 15px;">
+                        <img th:src="${category.image}"
+                             alt="Category Logo"
+                             style="max-width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2024 Racing Mode - Category Management System</p>
+        </footer>
+    </div>
+</body>
+</html>

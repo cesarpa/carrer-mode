@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Garage - Cars</title>
+    <style>
+        /* ... (Mantenemos tus estilos base) ... */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        header h1 { color: #fff !important; text-shadow: 0px 4px 6px rgba(0,0,0,0.15); letter-spacing: -0.5px; }
+        .nav-menu { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-menu a { padding: 10px 20px; background: #e94560; color: white; text-decoration: none; border-radius: 5px; transition: 0.3s; }
+        .nav-menu a:hover { background: #0f3460; }
+
+        .content { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 10px; color: #333; }
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        h2 { color: #333; }
+        .btn-add { background: #27ae60; color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: background 0.3s; }
+        .btn-add:hover { background: #229954; }
+
+        .cars-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .car-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s; border: 2px solid #667eea; position: relative; }
+        .car-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3); }
+
+        .car-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; }
+        .car-details { padding: 20px; }
+        .car-name { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 15px; }
+
+        /* ESTILOS PARA LA SECCIÓN DE CARRERA MANUAL */
+        .race-setup {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .race-setup label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+        }
+
+        .input-position {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-weight: 700;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .input-position:focus { border-color: #FF8700; }
+
+        .btn-race {
+            background: #FF8700;
+            color: #000;
+            width: 100%;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .btn-race:hover { background: #e67a00; transform: scale(1.02); }
+
+        .earnings-display {
+            background: #27ae60;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
+        .spec-box { background: #f0f0f0; padding: 12px; border-radius: 5px; }
+        .spec-label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .spec-value { font-size: 16px; font-weight: 700; color: #667eea; margin-top: 5px; }
+        .price-tag { color: #27ae60; }
+        .car-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-small { flex: 1; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; transition: 0.3s; text-decoration: none; text-align: center; }
+        .btn-edit { background: #667eea; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        footer { color: #ccc; text-align: center; margin-top: 30px; padding: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🏁 Racing Mode</h1>
+        <nav class="nav-menu">
+            <a href="/">Home</a>
+            <a href="/garages">Garages</a>
+            <a href="/cars">Cars</a>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div class="content-header">
+            <h2>Vehicle Fleet</h2>
+            <a href="/cars/new" class="btn-add">+ Add New Car</a>
+        </div>
+
+        <div th:unless="${cars.isEmpty()}" class="cars-grid">
+            <div th:each="car : ${cars}" class="car-card">
+                <div class="car-header">
+                    <h3 class="car-name" th:text="${car.name}">Car Name</h3>
+                </div>
+
+                <div class="car-details">
+                    <div class="specs-grid">
+                        <div class="spec-box">
+                            <p class="spec-label">Model</p>
+                            <p class="spec-value" th:text="${car.model}">N/A</p>
+                        </div>
+                        <div class="spec-box">
+                            <p class="spec-label">Market Value</p>
+                            <p class="spec-value price-tag car-price" th:data-price="${car.price}"
+                               th:text="${car.price != null ? '$' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</p>
+                        </div>
+                    </div>
+
+                    <div class="car-image-container" style="text-align: center; margin-bottom: 15px;">
+                        <img th:src="${car.image}"
+                             alt="car Logo"
+                             style="max-width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+
+                    <div class="car-actions">
+                        <a th:href="@{/cars/{id}/edit(id=${car.id})}" class="btn-small btn-edit">Edit</a>
+                        <a th:href="@{/cars/{id}/delete(id=${car.id})}" class="btn-small btn-delete">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

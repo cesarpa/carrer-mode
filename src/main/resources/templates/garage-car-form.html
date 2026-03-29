@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Car to Garage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            color: #333;
+        }
+        
+        h1 {
+            color: #1a1a2e;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .garage-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #e94560;
+        }
+
+        .error-alert {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #f5c6cb;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: #229954;
+        }
+        
+        .btn-cancel {
+            background: #eee;
+            color: #666;
+        }
+        
+        .btn-cancel:hover {
+            background: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Assign Car to Pit</h1>
+            
+            <div class="garage-info">
+                <p><strong>Garage:</strong> <span th:text="${garage.name}">Garage Name</span></p>
+                <p><strong>Available Balance:</strong> <span id="currentBalance" th:data-balance="${garage.credits}" style="color: #27ae60; font-weight: bold;" th:text="${'$' + #numbers.formatDecimal(garage.credits, 0, 'COMMA', 0, 'POINT')}">$0</span></p>
+            </div>
+
+            <div th:if="${error}" class="error-alert" th:text="${error}">
+                Error message goes here.
+            </div>
+
+            <div id="priceWarning" class="error-alert" style="display: none; background: #fff3cd; color: #856404; border-color: #ffeeba;">
+                ⚠️ Warning: You don't have enough credits to buy this vehicle.
+            </div>
+            
+            <form th:action="@{/garage-cars/assign}" method="post">
+                <input type="hidden" name="garageId" th:value="${garage.id}">
+                <div class="form-group">
+                    <label for="carId">Select Car from Database</label>
+                    <select id="carId" name="carId" required onchange="checkPrice()">
+                        <option value="" data-price="0">-- Select a Vehicle --</option>
+                        <option th:each="car : ${cars}" 
+                                th:value="${car.id}" 
+                                th:data-price="${car.price}"
+                                th:text="${car.name + ' (' + car.model + ') - $' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT')}">
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button id="submitBtn" type="submit" class="btn btn-submit">Assign to Garage</button>
+                    <a th:href="@{/garages/{id}(id=${garage.id})}" class="btn btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function checkPrice() {
+            const select = document.getElementById('carId');
+            const selectedOption = select.options[select.selectedIndex];
+            const carPrice = parseInt(selectedOption.getAttribute('data-price')) || 0;
+            const garageBalance = parseInt(document.getElementById('currentBalance').getAttribute('data-balance')) || 0;
+            
+            const warning = document.getElementById('priceWarning');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (carPrice > garageBalance) {
+                warning.style.display = 'block';
+                submitBtn.style.opacity = '0.5';
+                submitBtn.innerText = 'Insufficient Credits';
+            } else {
+                warning.style.display = 'none';
+                submitBtn.style.opacity = '1';
+                submitBtn.innerText = 'Assign to Garage';
+            }
+        }
+    </script>
+</body>
+</html>

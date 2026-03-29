@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${car.id != null} ? 'Edit Car' : 'Add New Car'">Car Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: #229954;
+        }
+        
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background: #7f8c8d;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1 th:text="${car.id != null} ? 'Edit Car' : 'Add New Car'">Car Form</h1>
+            
+            <form th:action="${car.id != null} ? @{/cars/{id}(id=${car.id})} : @{/cars}" method="post">
+                <div class="form-group">
+                    <label for="name" class="required">Car Name</label>
+                    <input type="text" id="name" name="name" th:value="${car.name}" placeholder="e.g. McLaren F1" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="model">Model Code</label>
+                        <input type="number" id="model" name="model" th:value="${car.model}"  placeholder="2017" >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="price">Price</label>
+                        <input type="number" id="price" name="price" th:value="${car.price}" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category" class="required">Category</label>
+                        <select id="category" name="category.id" required>
+                            <option value="">-- Select Category --</option>
+                            <option th:each="cat : ${categories}" 
+                                    th:value="${cat.id}" 
+                                    th:text="${cat.name}"
+                                    th:selected="${car.category?.id == cat.id}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Image</label>
+                    <textarea id="image" name="image" placeholder="Paste the image URL..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit" th:text="${car.id != null} ? 'Update Car' : 'Add Car'">Submit</button>
+                    <a href="/cars" class="btn btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
