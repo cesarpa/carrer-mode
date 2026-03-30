@@ -1,7 +1,7 @@
 # Racing Mode Database Skill
 
 ## Context
-This skill provides a comprehensive racing mode database management system. The application manages a racing fleet with vehicles, pilots, garages, and vehicle categories.
+This skill provides a comprehensive racing mode database management system. The application manages a racing fleet with vehicles, pilots, garages, categories, championships, and tracks.
 
 ## Database Schema
 
@@ -13,12 +13,9 @@ Defines the different racing categories/classes for vehicles.
 CREATE TABLE category (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL UNIQUE,
-    image VARCHAR(255) NOT NULL UNIQUE
+    image VARCHAR(255)
 );
 ```
-**Fields:**
-- `id`: Unique identifier
-- `name`: Category name (e.g., "Formula 1", "GT", "Truck Racing")
 
 #### 2. **Pilots**
 Information about race drivers.
@@ -27,32 +24,23 @@ CREATE TABLE pilot (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     country VARCHAR(255) NOT NULL,
-    license VARCHAR(255)
+    license VARCHAR(255),
+    image VARCHAR(255),
+    experience INT,
     garage_id BIGINT,
-    experience INT
+    FOREIGN KEY (garage_id) REFERENCES garage(id)
 );
 ```
-**Fields:**
-- `id`: Unique identifier
-- `first_name`: Driver's first name
-- `last_name`: Driver's last name
-- `id_card`: National ID card number (unique)
-- `date_of_birth`: Driver's birth date
-- `nationality`: Driver's nationality
-- `years_of_experience`: Years of racing experience
-- `license`: Racing license type
 
 #### 3. **Garages**
-Pit stops and maintenance facilities for vehicles.
+Pit stops and maintenance facilities for vehicles and pilots.
 ```sql
 CREATE TABLE garage (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    credits BIGINT DEFAULT 0
 );
 ```
-**Fields:**
-- `id`: Unique identifier
-- `name`: Garage name
 
 #### 4. **Cars**
 Race vehicles in the system.
@@ -62,43 +50,40 @@ CREATE TABLE car (
     name VARCHAR(255),
     price BIGINT,
     model BIGINT,
+    image VARCHAR(255),
     category_id BIGINT NOT NULL,
     FOREIGN KEY (category_id) REFERENCES category(id)
 );
 ```
-**Fields:**
-- `id`: Unique identifier
-- `name`: Car name/model (e.g., "McLaren F1", "Ferrari F50")
-- `price`: Car price in dollars
-- `model`: Model code/number
-- `category_id`: Reference to category (required)
 
-#### 5. **GarageCar**
-Intermediate table for Many-to-Many relationship between Garages and Cars.
-Allows a car to be present in multiple garages.
+#### 5. **Tracks**
+Racing circuits where championships take place.
 ```sql
-CREATE TABLE garage_car (
+CREATE TABLE track (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    car_id BIGINT NOT NULL,
-    garage_id BIGINT NOT NULL,
-    FOREIGN KEY (car_id) REFERENCES car(id),
-    FOREIGN KEY (garage_id) REFERENCES garage(id)
+    name VARCHAR(255) NOT NULL,
+    country VARCHAR(255),
+    image VARCHAR(255),
+    number_of_layouts INT
 );
 ```
 
-### 6. **Championship** 
+#### 6. **Championship** 
+Competitions consisting of multiple tracks and specific categories.
 ```sql
 CREATE TABLE championship (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     image VARCHAR(255),
-    total_prize BIGINT DEFAULT 0
+    total_prize BIGINT DEFAULT 0,
+    number_of_tracks INT,
+    entry_fee BIGINT DEFAULT 0
 );
 ``` 
 
-### 7. **ChampionshipCategory**
-Defines which categories can participate in which championships.
+#### 7. **ChampionshipCategory**
+Defines which categories can participate in which championships (Many-to-Many).
 ```sql
 CREATE TABLE championship_category (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -109,207 +94,112 @@ CREATE TABLE championship_category (
 );
 ```
 
+#### 8. **GarageChampionship**
+Tracks participation of garages in championships.
+```sql
+CREATE TABLE garage_championship (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    garage_id BIGINT NOT NULL,
+    championship_id BIGINT NOT NULL,
+    status VARCHAR(50), -- e.g., "ENTERED", "COMPLETED"
+    FOREIGN KEY (garage_id) REFERENCES garage(id),
+    FOREIGN KEY (championship_id) REFERENCES championship(id)
+);
+```
+
+#### 9. **GarageCar**
+Intermediate table for Many-to-Many relationship between Garages and Cars.
+```sql
+CREATE TABLE garage_car (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    car_id BIGINT NOT NULL,
+    garage_id BIGINT NOT NULL,
+    FOREIGN KEY (car_id) REFERENCES car(id),
+    FOREIGN KEY (garage_id) REFERENCES garage(id)
+);
+```
+
 ## Features
 
-### 1. Category Management
-- Create new racing categories
-- List all categories
-- Update category details
-- Delete categories
+### 1. Track Management
+- Register tracks with name, country, and number of available layouts.
+- List and manage tracks via `TrackController`.
 
-### 2. Pilot Management
-- Register new racing pilots
-- Store pilot information (name, country)
-- Track pilot experience and licenses // in the future, we can expand this to include more detailed information
-- Manage pilot assignments to vehicles
-
-### 3. Garage Management
-- Store cars information
-
-### 4. Car Management
-- Create cars
-- Assign cars categories
-- Assign cars to garages
-- Track car pricing and models
-- Edit car details
-- Delete cars from system
-- View all cars in inventory
-
-### 5. Championship Management
-- Create new championships
-- Assign categories to championships
-- Calculate earnings based on placements in championships (using the following distribution):
-  Place | Percentaje
-  * 1.º Place	14%
+### 2. Championship Management
+- Create championships with specific prize pools, entry fees, and number of tracks.
+- **Auto-fill Tracks Feature**: In the championship form, a button allows generating a random race calendar in the description based on the `numberOfTracks`. It fetches all available tracks and randomly selects layouts.
+- Calculate earnings based on placement: ChampionshipService#calculateSpecialWin
+  Place | Percentage
+  * 1.º Place	100%
   * 2.º Place	12.9%
-  * 3.º Place	11.6%
-  * 4.º Place	10.2%
-  * 5.º Place	9%
-  * 6.º Place	8.1%
-  * 7.º Place	7.1%
-  * 8.º Place	6.1%
-  * 9.º Place	5.1%
-  * 10.º Place	4%
-  * 11 and more	0%
+  * 3.º Place	40% 
+  * 4º Place	24%	
+  * 5º Place	16%	
+  * 6º Place	12%	
+  * 7º Place	10%	
+  * 8º Place	8%	
+  * 9º Place	6%	
+  * 10º Place	4%
 
+* 60% del 1º	£15,000	Cubre casi todos los entry fees del año.
+  3º Lugar	40% del 1º	£10,000	Recuperas la inversión de neumáticos y gasolina.
+  4º Lugar	24%	£6,000	Subsidio fuerte para el equipo técnico.
+  5º Lugar	16%	£4,000	Equivale a una carrera "gratis" (según tu cálculo de £4,100).
+  6º Lugar	12%	£3,000	Cubre los daños menores o un set de llantas.
+  7º Lugar	10%	£2,500	El "Deducible": Cubre el seguro del coche.
+  8º Lugar	8%	£2,000	Bono de viáticos y logística.
+  9º Lugar	6%	£1,500	Recuperas el costo de la Scholarship inicial.
+  10º Lugar	4%
+
+### 3. Pilot & Garage Management
+- Manage pilots and their assignments to garages.
+- Track garage credits and championship participation.
+
+### 4. Car & Category Management
+- Categorize cars and manage their distribution across garages.
 
 ## API Endpoints
 
-### Categories
-- `GET /api/v1/categorias` - List all categories
-- `GET /api/v1/categorias/{id}` - Get category by ID
-- `GET /api/v1/categorias/nombre/{name}` - Get category by name
-- `POST /api/v1/categorias` - Create new category
-- `PUT /api/v1/categorias/{id}` - Update category
-- `DELETE /api/v1/categorias/{id}` - Delete category
+### Tracks (REST)
+- `GET /tracks/api` - List all tracks (used by auto-fill feature)
 
-### Pilots
-- `GET /api/v1/pilotos` - List all pilots
-- `GET /api/v1/pilotos/{id}` - Get pilot by ID
-- `GET /api/v1/pilotos/cedula/{idCard}` - Get pilot by ID card
-- `POST /api/v1/pilotos` - Create new pilot
-- `PUT /api/v1/pilotos/{id}` - Update pilot
-- `DELETE /api/v1/pilotos/{id}` - Delete pilot
+### Championships (REST)
+- `GET /championships/api` - List all championships
+- `GET /championships/api/{id}` - Get championship details
+- `POST /championships/api` - Create championship
+- `PUT /championships/api/{id}` - Update championship
+- `DELETE /championships/api/{id}` - Delete championship
+- `GET /championships/api/{id}/calculate-earnings/{placement}` - Earnings calculator
 
-### Garages
-- `GET /api/v1/garages` - List all garages
-- `POST /api/v1/garages` - Create new garage
-- `PUT /api/v1/garages/{id}` - Update garage
-- `DELETE /api/v1/garages/{id}` - Delete garage
+### Web Controllers (UI)
+- `CarController`: `/cars`, `/cars/new`, `/cars/{id}/edit`
+- `CategoryController`: `/categories`
+- `ChampionshipController`: `/championships`, `/championships/new`, `/championships/{id}/edit`
+- `GarageController`: `/garages`
+- `PilotController`: `/pilots`
+- `TrackController`: `/tracks`, `/tracks/new`, `/tracks/{id}/edit`
 
-### Cars (REST API)
-- `GET /cars/api` - List all cars
-- `GET /cars/api/{id}` - Get car by ID
-- `POST /cars/api` - Create new car
-- `PUT /cars/api/{id}` - Update car
-- `DELETE /cars/api/{id}` - Delete car
+## Views (Thymeleaf Templates)
 
-### Cars (Web UI)
-- `GET /` - Dashboard with all cars
-- `GET /cars` - Car list page
-- `GET /cars/new` - Add car form
-- `POST /cars` - Save new car
-- `GET /cars/{id}/edit` - Edit car form
-- `POST /cars/{id}` - Update car
-- `GET /cars/{id}/delete` - Delete car
+- `championship-form.html`: Form to create/edit championships. Includes "Auto-fill Tracks" JS logic.
+- `championships-list.html`: Grid view of all available competitions.
+- `tracks-list.html`: Management view for racing circuits.
+- `menu.html`: Main navigation hub.
 
-### Championships
-- `GET /api/v1/championships` - List all championships
-- `GET /api/v1/championships/{id}` - Get championship by ID
-- `POST /api/v1/championships` - Create new championship
-- `PUT /api/v1/championships/{id}` - Update championship
-- `DELETE /api/v1/championships/{id}` - Delete championship
-- `GET /api/v1/championships/{id}/calculate-earnings/{placement}` - Calculate earnings for a placement in a championship
+## Data Models (Java Entities)
 
-## Web Interface
-
-### Dashboard (`/`)
-Main page showing all racing cars in an attractive grid layout with:
-- Car name and details
-- Category badge
-- Garage location
-- Action buttons (Edit, Delete)
-
-### Add/Edit Car (`/cars/new` and `/cars/{id}/edit`)
-Form to create or modify vehicle with fields:
-- Car name
-- Model code
-- Price
-- Category selection
-- Garage selection
-
-## Technical Stack
-- **Framework**: Spring Boot 4.0.5
-- **Language**: Java 21
-- **Database**: H2 (embedded)
-- **Template Engine**: Thymeleaf
-- **ORM**: Spring Data JPA
-- **Build Tool**: Maven
-- **API Documentation**: SpringDoc OpenAPI (Swagger)
-
-## Data Models
-
-### Category Entity
+### Track Entity
 ```java
 @Entity
 @Data
-public class Category {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String image;
-}
-```
-
-### Pilot Entity
-```java
-@Entity
-@Data
-public class Pilot {
+public class Track {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String country;
-    private String licence;
     private String image;
-    private Long experience;
-    private Garage garage;
-}
-```
-
-### GarageCar Entity
-```java
-@Entity
-@Data
-public class GarageCar {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @ManyToOne
-    private Car car;
-    
-    @ManyToOne
-    private Garage garage;
-}
-```
-
-### Garage Entity
-```java
-@Entity
-@Data
-public class Garage {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private Long credits;
-    
-    @OneToMany(mappedBy = "garage")
-    private List<GarageCar> garageCars;
-}
-```
-
-### Car Entity
-```java
-@Entity
-@Data
-public class Car {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private Long price;
-    private Long model;
-    private String image;
-    
-    @ManyToOne
-    private Category category;
-    
-    @OneToMany(mappedBy = "car")
-    private List<GarageCar> garageCars;
+    private Integer numberOfLayouts;
 }
 ```
 
@@ -325,101 +215,21 @@ public class Championship {
     private String description;
     private String image;
     private Long totalPrize;
+    private Integer numberOfTracks;
+    private Long entryFee;
     
     @OneToMany(mappedBy = "championship")
     private List<ChampionshipCategory> championshipCategories;
 }
 ```
 
-### ChampionshipCategory Entity
-```java
-@Entity
-@Data
-public class ChampionshipCategory {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @ManyToOne
-    private Championship championship;
-    
-    @ManyToOne
-    private Category category;
-}
-```
-
-## Services
-
-- **CategoryService**: CRUD operations for categories
-- **PilotService**: CRUD operations for pilots
-- **GarageService**: CRUD operations for garages
-- **CarService**: CRUD operations for cars with filtering capabilities
-
-## Getting Started
-
-### Access the Application
-1. Start the application: `mvn spring-boot:run`
-2. Open browser to `http://localhost:8080`
-3. Navigate using the main menu
-
-### Create a Racing Category
-```bash
-curl -X POST http://localhost:8080/api/v1/categorias \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Formula 1",
-    "description": "Single-seater racing",
-    "displacement": 1000,
-    "maxPower": 900
-  }'
-```
-
-### Create a Garage
-```bash
-curl -X POST http://localhost:8080/api/v1/garages \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Monaco Pit Stop",
-    "location": "Monte Carlo",
-    "capacity": 5,
-    "contactPhone": "+377 1234567",
-    "contactEmail": "info@monacopit.com"
-  }'
-```
-
-### Add a Racing Car
-```bash
-curl -X POST http://localhost:8080/cars/api \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Ferrari F1 2024",
-    "price": 15000000,
-    "model": 2024,
-    "category": {"id": 1},
-    "garage": {"id": 1}
-  }'
-```
-
-## Typical Use Cases
-
-1. **Register a new racing category** for an upcoming championship
-2. **Create pit stops** in different locations for maintenance
-3. **Register racing drivers** with their experience levels
-4. **Add vehicles** to inventory with assigned categories and garages
-5. **Track vehicle assignments** to pilots and locations
-6. **Manage vehicle details** (pricing, specifications)
-7. **View racing fleet** dashboard with all vehicles
-
-## Database Initialization
-
-The application uses H2 in-memory database. Data is persisted during the session but reset on application restart. For persistent storage, configure a production database in `application.properties`.
-
-## Notes
-- All APIs support CORS (Cross-Origin Resource Sharing)
-- Responses use standard HTTP status codes
-- Validation is enforced on required fields
-- Category is mandatory for all cars
-- Garage assignment is optional
+## Technical Stack
+- **Framework**: Spring Boot 3.4.1
+- **Language**: Java 21
+- **Database**: H2 (embedded) / `career_mode_db.mv.db`
+- **Template Engine**: Thymeleaf
+- **ORM**: Spring Data JPA
+- **Build Tool**: Maven
 
 ---
-**Racing Mode Skill v1.0** - Comprehensive car fleet management system for racing competitions.
+**Racing Mode Skill v1.1** - Updated with Tracks, Advanced Championship fields, and Auto-fill functionality.

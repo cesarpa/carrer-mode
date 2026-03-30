@@ -4,13 +4,10 @@ import com.cesarpacode.carrer_mode.model.Garage;
 import com.cesarpacode.carrer_mode.service.GarageService;
 import com.cesarpacode.carrer_mode.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/garage-cars")
@@ -51,18 +48,16 @@ public class GarageCarController {
         return "redirect:/garages/" + garageId;
     }
 
-    @PostMapping("/race-result")
-    @ResponseBody // Retorna JSON en lugar de una página
-    public ResponseEntity<?> processRaceResult(@RequestBody Map<String, Object> payload) {
-        Long garageId = Long.valueOf(payload.get("garageId").toString());
-        Double amount = Double.valueOf(payload.get("amount").toString()); // El netProfit (positivo o negativo)
-
-        // Actualizamos el saldo en el servicio
-        Garage updatedGarage = garageService.updateBalance(garageId, amount);
-
-        // Devolvemos el nuevo saldo para que el JS lo pinte
-        Map<String, Object> response = new HashMap<>();
-        response.put("newBalance", updatedGarage.getCredits());
-        return ResponseEntity.ok(response);
+    @PostMapping("/race")
+    public String race(@RequestParam Long garageId, @RequestParam Long carId, 
+                       @RequestParam(required = false) Integer placement,
+                       RedirectAttributes redirectAttributes) {
+        try {
+            String result = garageService.processVehicleRace(garageId, carId, placement);
+            redirectAttributes.addFlashAttribute("raceResult", result);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/garages/" + garageId;
     }
 }

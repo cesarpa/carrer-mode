@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Racing Mode - Tracks</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        header h1 { color: #fff !important; text-shadow: 0px 4px 6px rgba(0,0,0,0.15); letter-spacing: -0.5px; }
+        .nav-menu { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-menu a { padding: 10px 20px; background: #e94560; color: white; text-decoration: none; border-radius: 5px; transition: 0.3s; }
+        .nav-menu a:hover { background: #0f3460; }
+
+        .content { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 10px; color: #333; }
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        h2 { color: #333; }
+        .btn-add { background: #27ae60; color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: background 0.3s; }
+        .btn-add:hover { background: #229954; }
+
+        .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .track-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s; border: 2px solid #27ae60; position: relative; }
+        .track-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(39, 174, 96, 0.3); }
+
+        .track-header { background: linear-gradient(135deg, #27ae60 0%, #0f3460 100%); padding: 20px; color: white; }
+        .track-details { padding: 20px; }
+        .track-name { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 15px; }
+
+        .spec-box { background: #f0f0f0; padding: 12px; border-radius: 5px; margin-bottom: 15px; }
+        .spec-label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .spec-value { font-size: 16px; font-weight: 700; color: #27ae60; margin-top: 5px; }
+        
+        .track-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-small { flex: 1; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; transition: 0.3s; text-decoration: none; text-align: center; }
+        .btn-edit { background: #667eea; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        footer { color: #ccc; text-align: center; margin-top: 30px; padding: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🏎️ Racing Tracks</h1>
+        <nav class="nav-menu">
+            <a href="/">Home</a>
+            <a href="/garages">Garages</a>
+            <a href="/cars">Cars</a>
+            <a href="/championships">Championships</a>
+            <a href="/tracks">Tracks</a>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div th:if="${message}" class="alert" th:text="${message}"></div>
+
+        <div class="content-header">
+            <h2>Circuit List</h2>
+            <a href="/tracks/new" class="btn-add">+ Add New Track</a>
+        </div>
+
+        <div th:unless="${tracks.isEmpty()}" class="tracks-grid">
+            <div th:each="track : ${tracks}" class="track-card">
+                <div class="track-header">
+                    <h3 class="track-name" th:text="${track.name}" style="color: white;">Track Name</h3>
+                    <p th:if="${track.country}" th:text="${track.country}" style="color: #eee; font-size: 14px; font-weight: 600;"></p>
+                </div>
+
+                <div class="track-details">
+                    <div th:if="${track.image}" style="text-align: center; margin-bottom: 15px;">
+                        <img th:src="${track.image}" alt="Track Image" style="max-width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+                    
+                    <div class="spec-box">
+                        <p class="spec-label">Number of Layouts</p>
+                        <p class="spec-value" th:text="${track.numberOfLayouts}">1</p>
+                    </div>
+
+                    <div class="track-actions">
+                        <a th:href="@{/tracks/{id}/edit(id=${track.id})}" class="btn-small btn-edit">Edit</a>
+                        <a th:href="@{/tracks/{id}/delete(id=${track.id})}" class="btn-small btn-delete" 
+                           onclick="return confirm('Are you sure you want to delete this track?')">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${tracks.isEmpty()}" style="text-align: center; padding: 40px; color: #999;">
+            <h3>No tracks found.</h3>
+            <p>Add your first circuit to start racing!</p>
+        </div>
+    </div>
+</div>
+<footer>
+    <p>&copy; 2026 Racing Mode - Track Management</p>
+</footer>
+</body>
+</html>

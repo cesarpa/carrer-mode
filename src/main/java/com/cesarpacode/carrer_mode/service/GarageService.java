@@ -1,11 +1,7 @@
 package com.cesarpacode.carrer_mode.service;
 
-import com.cesarpacode.carrer_mode.model.Car;
-import com.cesarpacode.carrer_mode.model.Garage;
-import com.cesarpacode.carrer_mode.model.GarageCar;
-import com.cesarpacode.carrer_mode.repository.CarRepository;
-import com.cesarpacode.carrer_mode.repository.GarageCarRepository;
-import com.cesarpacode.carrer_mode.repository.GarageRepository;
+import com.cesarpacode.carrer_mode.model.*;
+import com.cesarpacode.carrer_mode.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +19,12 @@ public class GarageService {
 
     @Autowired
     private GarageCarRepository garageCarRepository;
+
+    @Autowired
+    private ChampionshipRepository championshipRepository;
+
+    @Autowired
+    private GarageChampionshipRepository garageChampionshipRepository;
 
     public List<Garage> getAll() {
         return garageRepository.findAll();
@@ -90,7 +92,96 @@ public class GarageService {
         // Remove from garage
         garageCarRepository.deleteByCarIdAndGarageId(carId, garageId);
     }
+
+    @Transactional
+    public void joinChampionship(Long garageId, Long championshipId) {
+        Garage garage = garageRepository.findById(garageId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid garage Id: " + garageId));
+        Championship championship = championshipRepository.findById(championshipId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid championship Id: " + championshipId));
+
+        // Check if already joined
+        boolean exists = garage.getGarageChampionships().stream()
+                .anyMatch(gc -> gc.getChampionship().getId().equals(championshipId));
+
+        if (!exists) {
+            // Check entry fee
+            if (championship.getEntryFee() != null && garage.getCredits() < championship.getEntryFee()) {
+                throw new IllegalStateException("Insufficient credits to join this championship. Required: $" + championship.getEntryFee());
+            }
+
+            // Deduct entry fee
+            if (championship.getEntryFee() != null) {
+                garage.setCredits(garage.getCredits() - championship.getEntryFee());
+                garageRepository.save(garage);
+            }
+
+            GarageChampionship garageChampionship = new GarageChampionship();
+            garageChampionship.setGarage(garage);
+            garageChampionship.setChampionship(championship);
+            garageChampionshipRepository.save(garageChampionship);
+        }
+    }
     
+    @Transactional
+    public void leaveChampionship(Long garageId, Long championshipId) {
+        garageChampionshipRepository.findAll().stream()
+                .filter(gc -> gc.getGarage().getId().equals(garageId) && gc.getChampionship().getId().equals(championshipId))
+                .findFirst()
+                .ifPresent(gc -> garageChampionshipRepository.delete(gc));
+    }
+
+    /**
+     * Lógica de carrera para un vehículo individual.
+     * Calcula FEE (1-5%), Pool (25-65%) y resultado según posición.
+     */
+    @Transactional
+    public String processVehicleRace(Long garageId, Long carId, Integer placement) {
+        Garage garage = garageRepository.findById(garageId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid garage Id: " + garageId));
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid car Id: " + carId));
+
+        // 1. Cálculo de FEE (1% a 5%)
+        double entryPercent = 0.01 + (Math.random() * 0.04);
+        long entryFee = (long) (car.getPrice() * entryPercent);
+
+        if (garage.getCredits() < entryFee) {
+            throw new IllegalStateException("Insufficient credits for entry fee: $" + entryFee);
+        }
+
+        // 2. Lógica de Pool (25% a 65%)
+        double poolPercentage = 0.25 + (Math.random() * 0.40);
+        long totalPool = (long) (car.getPrice() * poolPercentage);
+
+        // 3. Posición (si no viene, aleatoria 1-12)
+        int finalPos = (placement != null && placement > 0) ? placement : (int) (Math.random() * 12) + 1;
+
+        // 4. Distribución de premios
+        double winPercentage = 0;
+        switch (finalPos) {
+            case 1 -> winPercentage = 0.25;
+            case 2 -> winPercentage = 0.18;
+            case 3 -> winPercentage = 0.15;
+            case 4 -> winPercentage = 0.12;
+            case 5 -> winPercentage = 0.10;
+            case 6 -> winPercentage = 0.08;
+            case 7 -> winPercentage = 0.06;
+            case 8 -> winPercentage = 0.04;
+            case 9 -> winPercentage = 0.02;
+            case 10 -> winPercentage = 0.01;
+        }
+
+        long winnings = (long) (totalPool * winPercentage);
+        long netProfit = winnings - entryFee;
+
+        garage.setCredits(garage.getCredits() + netProfit);
+        garageRepository.save(garage);
+
+        String resultType = netProfit >= 0 ? "Win" : "Loss";
+        return String.format("Position: %dº | %s: $%d (Fee was $%d)", finalPos, resultType, Math.abs(netProfit), entryFee);
+    }
+
     public void delete(Long id) {
         garageRepository.deleteById(id);
     }

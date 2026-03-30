@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${championship.id != null} ? 'Edit Championship' : 'Add New Championship'">Championship Form</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h1 { color: #333; margin-bottom: 30px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #e94560; }
+        textarea { resize: vertical; min-height: 100px; }
+        .form-actions { display: flex; gap: 10px; margin-top: 30px; }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-submit { background: #27ae60; color: white; }
+        .btn-submit:hover { background: #229954; }
+        .btn-cancel { background: #95a5a6; color: white; }
+        .btn-cancel:hover { background: #7f8c8d; }
+        .required::after { content: " *"; color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1 th:text="${championship.id != null} ? 'Edit Championship' : 'Create New Championship'">Championship Form</h1>
+            
+            <form th:action="${championship.id != null} ? @{/championships/{id}(id=${championship.id})} : @{/championships}" method="post">
+                <div class="form-group">
+                    <label for="name" class="required">Championship Name</label>
+                    <input type="text" id="name" name="name" th:value="${championship.name}" placeholder="e.g. World GT Series" required>
+                </div>
+                
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label for="description" style="margin-bottom: 0;">Description</label>
+                        <button type="button" id="autoFillTracks" class="btn" style="flex: none; padding: 5px 10px; font-size: 12px; background: #3498db; color: white;">Auto-fill Tracks</button>
+                    </div>
+                    <textarea id="description" name="description" th:text="${championship.description}" placeholder="Details about the championship..."></textarea>
+                </div>
+
+                <script>
+                    document.getElementById('autoFillTracks').addEventListener('click', async function() {
+                        const numTracksInput = document.getElementById('numberOfTracks');
+                        const numTracks = parseInt(numTracksInput.value);
+                        
+                        if (isNaN(numTracks) || numTracks <= 0) {
+                            alert('Please enter a valid number of tracks first.');
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('/tracks/api');
+                            const allTracks = await response.json();
+
+                            if (allTracks.length === 0) {
+                                alert('No tracks found in the database.');
+                                return;
+                            }
+
+                            let selectedTracks = [];
+                            const descriptionArea = document.getElementById('description');
+                            
+                            // Randomly select n tracks (with replacement if not enough tracks)
+                            for (let i = 0; i < numTracks; i++) {
+                                const randomTrack = allTracks[Math.floor(Math.random() * allTracks.length)];
+                                const randomLayout = Math.floor(Math.random() * (randomTrack.numberOfLayouts || 1)) + 1;
+                                selectedTracks.push(`${i + 1}. ${randomTrack.name} (Layout ${randomLayout})`);
+                            }
+
+                            descriptionArea.value = selectedTracks.join('\n');
+                        } catch (error) {
+                            console.error('Error fetching tracks:', error);
+                            alert('Failed to fetch tracks.');
+                        }
+                    });
+                </script>
+
+                <div class="form-group">
+                    <label for="totalPrize">Total Prize Pool ($)</label>
+                    <input type="number" id="totalPrize" name="totalPrize" th:value="${championship.totalPrize}" min="0" placeholder="500000">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="numberOfTracks">Number of Tracks</label>
+                        <input type="number" id="numberOfTracks" name="numberOfTracks" th:value="${championship.numberOfTracks}" min="1" placeholder="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="entryFee">Entry Fee ($)</label>
+                        <input type="number" id="entryFee" name="entryFee" th:value="${championship.entryFee}" min="0" placeholder="1000">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Logo URL</label>
+                    <input type="text" id="image" name="image" th:value="${championship.image}" placeholder="https://example.com/logo.png">
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryIds">Allowed Categories</label>
+                    <select id="categoryIds" name="categoryIds" multiple style="height: 120px;">
+                        <option th:each="cat : ${categories}" 
+                                th:value="${cat.id}" 
+                                th:text="${cat.name}"
+                                th:selected="${championship.categoryIds != null && championship.categoryIds.contains(cat.id)}">
+                        </option>
+                    </select>
+                    <small style="color: #666; margin-top: 5px; display: block;">Hold Ctrl (Windows) or Command (Mac) to select multiple categories.</small>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit" th:text="${championship.id != null} ? 'Update Championship' : 'Create Championship'">Submit</button>
+                    <a href="/championships" class="btn btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

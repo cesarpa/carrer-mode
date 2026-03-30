@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Racing Mode - Championships</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        header h1 { color: #fff !important; text-shadow: 0px 4px 6px rgba(0,0,0,0.15); letter-spacing: -0.5px; }
+        .nav-menu { display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav-menu a { padding: 10px 20px; background: #e94560; color: white; text-decoration: none; border-radius: 5px; transition: 0.3s; }
+        .nav-menu a:hover { background: #0f3460; }
+
+        .content { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 10px; color: #333; }
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        h2 { color: #333; }
+        .btn-add { background: #27ae60; color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: background 0.3s; }
+        .btn-add:hover { background: #229954; }
+
+        .championships-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
+        .championship-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: 0.3s; border: 2px solid #e94560; position: relative; }
+        .championship-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(233, 69, 96, 0.3); }
+
+        .championship-header { background: linear-gradient(135deg, #e94560 0%, #0f3460 100%); padding: 20px; color: white; }
+        .championship-details { padding: 20px; }
+        .championship-name { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 15px; }
+        .championship-description { font-size: 14px; color: #555; margin-bottom: 15px; height: 60px; overflow: hidden; text-overflow: ellipsis; }
+
+        .specs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .spec-box { background: #f0f0f0; padding: 12px; border-radius: 5px; }
+        .spec-label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 600; }
+        .spec-value { font-size: 16px; font-weight: 700; color: #e94560; margin-top: 5px; }
+        .prize-tag { color: #27ae60; }
+        .prize-box { grid-column: span 2; }
+        
+        .categories-container { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+        .category-badge { background: #0f3460; color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 600; }
+
+        .championship-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-small { flex: 1; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; transition: 0.3s; text-decoration: none; text-align: center; }
+        .btn-edit { background: #667eea; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        footer { color: #ccc; text-align: center; margin-top: 30px; padding: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🏆 Championships</h1>
+        <nav class="nav-menu">
+            <a href="/">Home</a>
+            <a href="/garages">Garages</a>
+            <a href="/cars">Cars</a>
+            <a href="/championships">Championships</a>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div class="content-header">
+            <h2>Competition List</h2>
+            <a href="/championships/new" class="btn-add">+ Create Championship</a>
+        </div>
+
+        <div th:unless="${championships.isEmpty()}" class="championships-grid">
+            <div th:each="championship : ${championships}" class="championship-card">
+                <div class="championship-header">
+                    <h3 class="championship-name" th:text="${championship.name}" style="color: white;">Championship Name</h3>
+                </div>
+
+                <div class="championship-details">
+                    <p class="championship-description" th:text="${championship.description}">Description</p>
+                    
+                    <div class="specs-grid">
+                        <div class="spec-box prize-box">
+                            <p class="spec-label">Total Prize Pool</p>
+                            <p class="spec-value prize-tag" 
+                               th:text="${championship.totalPrize != null ? '$' + #numbers.formatDecimal(championship.totalPrize, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</p>
+                        </div>
+                        <div class="spec-box">
+                            <p class="spec-label">Tracks</p>
+                            <p class="spec-value" th:text="${championship.numberOfTracks != null ? championship.numberOfTracks : 'N/A'}">0</p>
+                        </div>
+                        <div class="spec-box">
+                            <p class="spec-label">Entry Fee</p>
+                            <p class="spec-value" 
+                               th:text="${championship.entryFee != null ? '$' + #numbers.formatDecimal(championship.entryFee, 0, 'COMMA', 0, 'POINT') : 'Free'}">$0</p>
+                        </div>
+                    </div>
+
+                    <div th:if="${championship.championshipCategories != null && !championship.championshipCategories.isEmpty()}">
+                        <p class="spec-label">Allowed Categories</p>
+                        <div class="categories-container">
+                            <span th:each="cc : ${championship.championshipCategories}" 
+                                  class="category-badge" 
+                                  th:text="${cc.category.name}">Category</span>
+                        </div>
+                    </div>
+
+                    <div class="championship-image-container" th:if="${championship.image != null && !championship.image.isEmpty()}" style="text-align: center; margin-bottom: 15px;">
+                        <img th:src="${championship.image}" 
+                             alt="Championship Logo" 
+                             style="max-width: 100%; height: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+
+                    <div class="championship-actions">
+                        <a th:href="@{/championships/{id}/edit(id=${championship.id})}" class="btn-small btn-edit">Edit</a>
+                        <a th:href="@{/championships/{id}/delete(id=${championship.id})}" class="btn-small btn-delete">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${championships.isEmpty()}" style="text-align: center; padding: 40px; color: #999;">
+            <h3>No championships found.</h3>
+            <p>Create your first tournament to start the competition!</p>
+        </div>
+    </div>
+</div>
+<footer>
+    <p>&copy; 2026 Racing Mode - Championship Management</p>
+</footer>
+</body>
+</html>

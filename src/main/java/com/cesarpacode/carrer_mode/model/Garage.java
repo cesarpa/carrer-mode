@@ -26,7 +26,14 @@ public class Garage {
     @OneToMany(mappedBy = "garage", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<GarageCar> garageCars = new java.util.ArrayList<>();
 
+    @OneToMany(mappedBy = "garage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<GarageChampionship> garageChampionships = new java.util.ArrayList<>();
+
     public java.util.List<Car> getCars() {
         return garageCars.stream().map(GarageCar::getCar).toList();
+    }
+
+    public java.util.List<Championship> getChampionships() {
+        return garageChampionships.stream().map(GarageChampionship::getChampionship).toList();
     }
 }

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${garage.name + ' - Garage'}">Current Garage</title>
     <style>
-        /* ... (Mantenemos tus estilos base) ... */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -37,7 +36,18 @@
         .credits-value { color: #27ae60; }
 
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
-        .btn-add-car { background: #27ae60; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: 0.3s; border: none; cursor: pointer; }
+        .btn-add-car { background: #27ae60; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600; transition: 0.3s; border: none; cursor: pointer; text-align: center; }
+
+        /* CHAMPIONSHIP STYLES */
+        .championship-list { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .championship-item { background: #f8f9fa; border: 1px solid #e94560; border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .championship-info h4 { color: #e94560; margin-bottom: 5px; }
+        .championship-info p { font-size: 13px; color: #666; }
+        .join-form { background: #f0f2f5; padding: 20px; border-radius: 8px; display: flex; gap: 10px; align-items: flex-end; margin-top: 20px; border: 1px solid #ddd; }
+        .join-form .form-group { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .join-form label { font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; }
+        .join-form select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 100%; }
+        .btn-join { background: #e94560; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: 600; cursor: pointer; height: 40px; }
 
         .cars-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .car-card { background: white; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; }
@@ -45,16 +55,17 @@
         .car-details { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
         .car-name { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
 
-        /* ESTILOS RACE MODE */
         .race-controls {
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px dashed #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         .race-input-group {
             display: flex;
             gap: 5px;
-            margin-bottom: 10px;
         }
         .input-pos {
             flex: 1;
@@ -62,15 +73,6 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 13px;
-        }
-        .fee-tag {
-            background: #eee;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #666;
-            white-space: nowrap;
         }
         .btn-race {
             background: #FF8700;
@@ -82,17 +84,26 @@
             font-weight: 800;
             cursor: pointer;
             text-transform: uppercase;
-            margin-bottom: 10px;
         }
         .btn-race:hover { background: #e67a00; }
-        .race-result {
-            padding: 10px;
+
+        .alert {
+            padding: 15px;
             border-radius: 5px;
-            font-size: 13px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .fee-tag {
+            background: #eee;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
             font-weight: 700;
-            text-align: center;
-            display: none;
-            margin-bottom: 10px;
+            color: #666;
+            display: inline-block;
         }
     </style>
 </head>
@@ -111,11 +122,14 @@
     </header>
 
     <div class="content">
+        <!-- Result Messages -->
+        <div th:if="${raceResult}" class="alert alert-success" th:text="${raceResult}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
         <div class="garage-info-bar">
             <div class="info-item">
                 <p class="info-label">Available Credits</p>
                 <p class="info-value credits-value" id="garageBalance"
-                   th:data-balance="${garage.credits}"
                    th:text="${garage.credits != null ? '$' + #numbers.formatDecimal(garage.credits, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</p>
             </div>
             <div class="info-item">
@@ -126,7 +140,7 @@
 
         <div class="section-header">
             <h2>Vehicle Collection</h2>
-            <a th:href="@{/garage-cars/assign(garageId=${garage.id})}" class="btn-add-car" style="background: #3498db;">+ Assign Car</a>
+            <a th:href="@{/garage-cars/assign(garageId=${garage.id})}" class="btn-add-car" style="background: #3498db;">+ Buy Car</a>
         </div>
 
         <div th:unless="${garage.cars == null || garage.cars.isEmpty()}" class="cars-grid">
@@ -136,27 +150,64 @@
                 <div class="car-details">
                     <div class="car-name" th:text="${car.name}">Car Name</div>
                     <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                        Value: <span class="car-market-price" th:data-price="${car.price}"
-                                     th:text="${car.price != null ? '$' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</span>
+                        Value: <span th:text="${car.price != null ? '$' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</span>
                     </div>
 
-                    <div class="race-controls">
-                        <div class="race-input-group">
-                            <input type="number" class="input-pos" placeholder="Pos (1-20)" min="1" max="20">
-                            <div class="fee-tag">FEE: <span class="fee-text">$-</span></div>
-                        </div>
-                        <button class="btn-race" onclick="startRace(this)">🏁 Race</button>
-                        <div class="race-result"></div>
-                    </div>
-
-                    <form th:action="@{/garage-cars/sell}" method="post" style="width: 100%;">
+                    <form th:action="@{/garage-cars/sell}" method="post" style="width: 100%; margin-top: 10px;">
                         <input type="hidden" name="garageId" th:value="${garage.id}">
                         <input type="hidden" name="carId" th:value="${car.id}">
                         <button type="submit"
                                 class="btn-add-car"
-                                style="background: #e74c3c; width: 100%; border: none; cursor: pointer;"
-                                th:onclick="|return confirm('Sell this vehicle for $' + #numbers.formatDecimal(car.price * 0.7, 0, 'COMMA', 0, 'POINT') + ' (70% of value)?')|">
+                                style="background: #e74c3c; width: 100%;">
                             Sell Vehicle
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="content" style="margin-top: 30px; padding: 0;">
+            <div class="section-header">
+                <h2>Championship Participation</h2>
+            </div>
+
+            <!-- Join New Championship Form -->
+            <form th:action="@{/garages/{id}/join-championship(id=${garage.id})}" method="post" class="join-form">
+                <div class="form-group">
+                    <label for="championshipId">Available Championships</label>
+                    <select name="championshipId" id="championshipId" required>
+                        <option value="">-- Select a Tournament --</option>
+                        <option th:each="champ : ${allChampionships}"
+                                th:value="${champ.id}"
+                                th:text="${champ.name + ' (Fee: $' + #numbers.formatDecimal(champ.entryFee, 0, 'COMMA', 0, 'POINT') + ')'}">
+                        </option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-join">Pay Fee & Join</button>
+            </form>
+
+            <!-- List of joined championships -->
+            <div class="championship-list">
+                <div th:if="${garage.garageChampionships.isEmpty()}" style="text-align: center; color: #999; padding: 20px;">
+                    This garage hasn't joined any championships yet.
+                </div>
+                <div th:each="gc : ${garage.garageChampionships}" class="championship-item">
+                    <div class="championship-info">
+                        <h4 th:text="${gc.championship.name}">Championship Name</h4>
+                        <p th:text="${gc.championship.description}">Description</p>
+                        <span class="fee-tag" th:text="${gc.championship.numberOfTracks + ' Tracks'}">5 Tracks</span>
+                    </div>
+                    
+                    <form th:action="@{/garages/{id}/complete-championship(id=${garage.id})}" method="post" 
+                          style="display: flex; align-items: flex-end; gap: 10px;">
+                        <input type="hidden" name="championshipId" th:value="${gc.championship.id}">
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="font-size: 10px; font-weight: bold; color: #666; text-transform: uppercase;">Final Position</label>
+                            <input type="number" name="position" value="1" min="1" max="20" required
+                                   style="width: 60px; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                        </div>
+                        <button type="submit" class="btn-race" style="width: auto; padding: 10px 15px; background: #e94560; color: white;">
+                            🏆 Finish
                         </button>
                     </form>
                 </div>
@@ -164,110 +215,5 @@
         </div>
     </div>
 </div>
-<script>
-    // Función auxiliar para obtener el porcentaje de entrada (1% a 5%)
-    function getRandomEntryPercent() {
-        return (Math.random() * (0.05 - 0.01) + 0.01);
-    }
-
-    // Inicializar costos dinámicos al cargar
-    document.querySelectorAll('.car-card').forEach(card => {
-        const price = parseFloat(card.querySelector('.car-market-price').getAttribute('data-price')) || 0;
-
-        // Generamos un porcentaje aleatorio para este coche específico
-        const entryPercent = getRandomEntryPercent();
-        const fee = price * entryPercent;
-
-        // GUARDADO CLAVE: Guardamos el porcentaje en el dataset de la card
-        card.dataset.currentFeePercent = entryPercent;
-
-        // Formateamos el texto del FEE para que el usuario sepa cuánto le cobran
-        card.querySelector('.fee-text').innerText = `$${Math.floor(fee).toLocaleString()} (${(entryPercent * 100).toFixed(1)}%)`;
-    });
-
-    async function startRace(button) {
-        const card = button.closest('.car-card');
-        const resultDiv = card.querySelector('.race-result');
-        const posInput = card.querySelector('.input-pos');
-
-        const carPrice = parseFloat(card.querySelector('.car-market-price').getAttribute('data-price')) || 0;
-
-        // RECUPERACIÓN CLAVE: Leemos el porcentaje que guardamos antes
-        const entryPercent = parseFloat(card.dataset.currentFeePercent) || 0.01;
-        const entryFee = carPrice * entryPercent;
-
-        const balanceElement = document.getElementById('garageBalance');
-        const currentBalance = parseFloat(balanceElement.getAttribute('data-balance')) || 0;
-
-        // 1. Validación de saldo con el FEE dinámico
-        if (currentBalance < entryFee) {
-            alert(`¡Fondos insuficientes! Necesitas $${Math.floor(entryFee).toLocaleString()} para esta carrera.`);
-            return;
-        }
-
-        // 2. Lógica de Pool Buffeada (mínimo 15% del valor del coche)
-        const poolPercentage = (Math.random() * (0.65 - 0.25) + 0.25);
-        const totalPool = carPrice * poolPercentage;
-
-        // 3. Posición (Si está vacío, generamos una aleatoria entre 1 y 12)
-        let placement = parseInt(posInput.value);
-        if (isNaN(placement) || placement < 1) placement = Math.floor(Math.random() * 12) + 1;
-
-        // 4. Distribución de premios
-        const distribution = {
-            1: 0.25, 2: 0.18, 3: 0.15, 4: 0.12, 5: 0.10,
-            6: 0.08, 7: 0.06, 8: 0.04, 9: 0.02, 10: 0.01
-        };
-
-        const winPercentage = distribution[placement] || 0;
-        const netProfit = (totalPool * winPercentage) - entryFee;
-
-        // Animación visual
-        button.disabled = true;
-        button.innerText = "🏎️ Racing...";
-        resultDiv.style.display = 'none';
-
-        setTimeout(async () => {
-            try {
-                const response = await fetch('/garage-cars/race-result', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        garageId: [[${garage.id}]],
-                        amount: netProfit
-                    })
-                });
-
-                if (!response.ok) throw new Error("Error en el servidor");
-
-                const data = await response.json();
-
-                // Actualizar Saldo Real-Time
-                balanceElement.setAttribute('data-balance', data.newBalance);
-                balanceElement.innerText = `$${Math.floor(data.newBalance).toLocaleString('en-US')}`;
-
-                button.disabled = false;
-                button.innerText = "🏁 Race";
-                resultDiv.style.display = 'block';
-
-                if (netProfit > 0) {
-                    resultDiv.style.background = '#d4edda';
-                    resultDiv.style.color = '#155724';
-                    resultDiv.innerHTML = `Pos: ${placement}º | Win: +$${Math.floor(netProfit).toLocaleString()}`;
-                } else {
-                    resultDiv.style.background = '#f8d7da';
-                    resultDiv.style.color = '#721c24';
-                    resultDiv.innerHTML = `Pos: ${placement}º | Loss: -$${Math.abs(Math.floor(netProfit)).toLocaleString()}`;
-                }
-
-            } catch (error) {
-                console.error("Error:", error);
-                button.disabled = false;
-                button.innerText = "🏁 Race";
-                alert("Hubo un problema con la conexión al servidor de carreras.");
-            }
-        }, 1200);
-    }
-</script>
 </body>
 </html>

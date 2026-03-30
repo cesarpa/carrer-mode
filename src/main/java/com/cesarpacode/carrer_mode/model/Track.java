@@ -5,14 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Championship {
-
+public class Track {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,19 +17,9 @@ public class Championship {
     @Column(nullable = false)
     private String name;
 
-    private String description;
+    private String country;
 
     private String image;
 
-    private Long totalPrize;
-
-    private Integer numberOfTracks;
-
-    private Long entryFee;
-
-    @OneToMany(mappedBy = "championship", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChampionshipCategory> championshipCategories;
-
-    @Transient
-    private List<Long> categoryIds;
+    private Integer numberOfLayouts;
 }
