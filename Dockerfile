@@ -14,8 +14,9 @@ RUN mvn package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Create data directory for H2 persistence
+# Create data directory and copy existing database files
 RUN mkdir ./data && chmod 777 ./data
+COPY data/ ./data/
 
 # Copy the JAR from the build stage
 COPY --from=build /app/target/carrer-mode-0.0.1-SNAPSHOT.jar app.jar

@@ -4,7 +4,5 @@ mvnw.cmd
 .mvn/
 .idea/
 .git/
-*.mv.db
-*.trace.db
 Dockerfile
 .dockerignore
