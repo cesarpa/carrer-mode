@@ -179,7 +179,7 @@
                         <option value="">-- Select a Tournament --</option>
                         <option th:each="champ : ${allChampionships}"
                                 th:value="${champ.id}"
-                                th:text="${champ.name + ' (Fee: $' + #numbers.formatDecimal(champ.entryFee, 0, 'COMMA', 0, 'POINT') + ')'}">
+                                th:text="${champ.name + ' (Fee: $' + #numbers.formatDecimal(champ.entryFee, 0, 'COMMA', 0, 'POINT') + ') [' + #strings.listJoin(champ.championshipCategories.![category.name], ', ') + ']'}">
                         </option>
                     </select>
                 </div>
@@ -194,6 +194,12 @@
                 <div th:each="gc : ${garage.garageChampionships}" class="championship-item">
                     <div class="championship-info">
                         <h4 th:text="${gc.championship.name}">Championship Name</h4>
+                        <div style="margin-bottom: 8px;">
+                            <span th:each="cc : ${gc.championship.championshipCategories}" 
+                                  class="fee-tag" 
+                                  style="background: #0f3460; color: white; margin-right: 5px;"
+                                  th:text="${cc.category.name}">Category</span>
+                        </div>
                         <p th:text="${gc.championship.description}">Description</p>
                         <span class="fee-tag" th:text="${gc.championship.numberOfTracks + ' Tracks'}">5 Tracks</span>
                     </div>

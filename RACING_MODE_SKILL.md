@@ -141,16 +141,6 @@ CREATE TABLE garage_car (
   * 9º Place	6%	
   * 10º Place	4%
 
-* 60% del 1º	£15,000	Cubre casi todos los entry fees del año.
-  3º Lugar	40% del 1º	£10,000	Recuperas la inversión de neumáticos y gasolina.
-  4º Lugar	24%	£6,000	Subsidio fuerte para el equipo técnico.
-  5º Lugar	16%	£4,000	Equivale a una carrera "gratis" (según tu cálculo de £4,100).
-  6º Lugar	12%	£3,000	Cubre los daños menores o un set de llantas.
-  7º Lugar	10%	£2,500	El "Deducible": Cubre el seguro del coche.
-  8º Lugar	8%	£2,000	Bono de viáticos y logística.
-  9º Lugar	6%	£1,500	Recuperas el costo de la Scholarship inicial.
-  10º Lugar	4%
-
 ### 3. Pilot & Garage Management
 - Manage pilots and their assignments to garages.
 - Track garage credits and championship participation.
