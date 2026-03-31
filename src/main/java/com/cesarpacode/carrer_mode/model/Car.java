@@ -16,6 +16,8 @@ public class Car {
 
     private Long model;
 
+    private Integer horsePower;
+
     private String image;
 
     @ManyToOne

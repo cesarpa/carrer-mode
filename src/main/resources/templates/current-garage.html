@@ -150,8 +150,11 @@
                      class="car-img" th:alt="${car.name}">
                 <div class="car-details">
                     <div class="car-name" th:text="${car.name}">Car Name</div>
-                    <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 5px;">
                         Value: <span th:text="${car.price != null ? '$' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</span>
+                    </div>
+                    <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                        HP: <span th:text="${car.horsePower != null ? car.horsePower + ' HP' : 'N/A'}">N/A</span>
                     </div>
 
                     <form th:action="@{/garage-cars/sell}" method="post" style="width: 100%; margin-top: 10px;">

@@ -134,12 +134,17 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="horsePower">HP</label>
+                        <input type="number" id="horsePower" name="horsePower" th:value="${car.horsePower}" placeholder="e.g. 500">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="price">Price</label>
                         <input type="number" id="price" name="price" th:value="${car.price}" min="0">
                     </div>
-                </div>
-                
-                <div class="form-row">
+
                     <div class="form-group">
                         <label for="category" class="required">Category</label>
                         <select id="category" name="category.id" required>

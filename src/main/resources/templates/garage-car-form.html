@@ -148,7 +148,7 @@
                         <option th:each="car : ${cars}" 
                                 th:value="${car.id}" 
                                 th:data-price="${car.price}"
-                                th:text="${car.name + ' (' + car.model + ') - $' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT')}">
+                                th:text="${car.name + ' (' + car.model + ') ' + (car.horsePower != null ? car.horsePower + ' HP ' : '') + '- $' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT')}">
                         </option>
                     </select>
                 </div>

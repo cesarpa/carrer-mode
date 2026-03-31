@@ -142,6 +142,10 @@
                             <p class="spec-value price-tag car-price" th:data-price="${car.price}"
                                th:text="${car.price != null ? '$' + #numbers.formatDecimal(car.price, 0, 'COMMA', 0, 'POINT') : '$0'}">$0</p>
                         </div>
+                        <div class="spec-box">
+                            <p class="spec-label">HP</p>
+                            <p class="spec-value" th:text="${car.horsePower != null ? car.horsePower + ' HP' : 'N/A'}">N/A</p>
+                        </div>
                     </div>
 
                     <div class="car-image-container" style="text-align: center; margin-bottom: 15px;">
